@@ -18,7 +18,7 @@ func NewUserHandler(userService user.Service) *userHandler {
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
 
-	// declare mapping request body from insomnia(client)
+	// declare mapping binding request body JSON from insomnia(client)
 	var input user.RegisterUserInput
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -53,5 +53,35 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "Success", formatter)
 
 	// show response body
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) Login(c *gin.Context) {
+
+	var input user.LoginInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "Error", errorMessage) // strings.Split(err.Error(), "\n")
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+	// logged in user session
+	loggedinUser, err := h.userService.Login(input)
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "Error", errorMessage) // strings.Split(err.Error(), "\n")
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	formatter := user.FormatUser(loggedinUser, "tokentokentoken")
+
+	response := helper.APIResponse("Successfully Login", http.StatusOK, "Success", formatter)
+
 	c.JSON(http.StatusOK, response)
 }

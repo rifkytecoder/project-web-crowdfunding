@@ -51,6 +51,17 @@ func main() {
 	authService := auth.NewService()
 	//fmt.Println(authService.GenerateToken(1001)) //hasilnya copy ke jwt.io
 
+	// Testing Validation token
+	// token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyMX0.Mbv-7hj16P7mVtBK3mD_zX9CoTz6yzUhzjuAZxSYP5I")
+	// if err != nil {
+	// 	fmt.Println("ERROR")
+	// }
+	// if token.Valid {
+	// 	fmt.Println("VALID")
+	// } else {
+	// 	fmt.Println("INVALID")
+	// } // cek di JWT.io di bagian Signature
+
 	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"project-campaign/auth"
 	"project-campaign/handler"
 	"project-campaign/user"
 
@@ -47,7 +48,10 @@ func main() {
 
 	//userService.SaveAvatar(1, "images/1-profile.png")
 
-	userHandler := handler.NewUserHandler(userService)
+	authService := auth.NewService()
+	//fmt.Println(authService.GenerateToken(1001)) //hasilnya copy ke jwt.io
+
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")

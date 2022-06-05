@@ -2,11 +2,15 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"project-campaign/auth"
 	"project-campaign/handler"
+	"project-campaign/helper"
 	"project-campaign/user"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -70,7 +74,8 @@ func main() {
 		api.POST("/users", userHandler.RegisterUser)
 		api.POST("/sessions", userHandler.Login)
 		api.POST("/email_checkers", userHandler.CheckEmailAvailability)
-		api.POST("/avatars", userHandler.UploadAvatar)
+		//api.POST("/avatars", userHandler.UploadAvatar) // none middleware
+		api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 	}
 
 	router.Run()
@@ -92,4 +97,60 @@ func main() {
 	// 	UpdatedAt:      time.Time{},
 	// }
 	// userRepository.Save(user)
+}
+
+// Middleware
+func authMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Ambil header
+		authHeader := c.GetHeader("Authorization")
+		if !strings.Contains(authHeader, "Bearer") {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// Bearer <tokentokentoken>
+		var tokenString string
+		arrayToken := strings.Split(authHeader, " ")
+		if len(arrayToken) == 2 {
+			tokenString = arrayToken[1]
+		}
+
+		// Ambil token
+		token, err := authService.ValidateToken(tokenString)
+		if err != nil {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// Validation token
+		claim, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// Ambil user id
+		userID := int(claim["user_id"].(float64))
+		user, err := userService.GetUserByID(userID)
+		if err != nil {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+		// map "key" : value
+		c.Set("currentUser", user) // kirim context(key) ke user handler
+
+	}
+
+	// Middleware steps
+	// ambil nilai header Authorization: <Bearer tokentokentoken>
+	// dari header Authorization, kita ambil nilai tokennya saja
+	// kita validasi token
+	// kita ambil user_id
+	// ambil user dari db berdasarkan user_id lewat service
+	// kita set context isinya user
 }

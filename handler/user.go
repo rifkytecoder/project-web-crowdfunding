@@ -148,7 +148,7 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 
 func (h *userHandler) UploadAvatar(c *gin.Context) {
 
-	file, err := c.FormFile("avatar") // key form-data
+	file, err := c.FormFile("avatar") // key form-data(multipart insomnia)
 	if err != nil {
 		data := gin.H{
 			"is_uploaded": false,
@@ -160,7 +160,10 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	}
 
 	// harusnya dapat dari JWT
-	userID := 1
+	//userID := 1
+	// menangkap key dari map set dri authMiddleware
+	currentUser := c.MustGet("currentUser").(user.User) // middleware **
+	userID := currentUser.ID                            //user yg melakukan request
 
 	// destinations
 	//path := "images/" + file.Filename //images/file-name.png

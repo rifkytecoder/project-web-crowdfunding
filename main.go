@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"project-campaign/auth"
+	"project-campaign/campaign"
 	"project-campaign/handler"
 	"project-campaign/helper"
 	"project-campaign/user"
@@ -26,6 +28,24 @@ func main() {
 	//fmt.Println("Connection database succeedd")
 
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db) //**
+	//testing preload gambar is_primary
+	campaigns, _ := campaignRepository.FindByUserID(1)
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println(len(campaigns)) // rentang/jumlah data
+	// tampilkan rentang data dari field name
+	for _, campaign := range campaigns {
+		fmt.Println(campaign.Name)
+
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println("jumlah gambar")
+			fmt.Println(len(campaign.CampaignImages))
+			fmt.Println(campaign.CampaignImages[0].FileName)
+		}
+	}
+
 	userService := user.NewService(userRepository)
 
 	// userByEmail, err := userRepository.FindByEmail("xgopers@gmail.com")

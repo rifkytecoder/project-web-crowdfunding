@@ -30,24 +30,23 @@ func main() {
 	userRepository := user.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db) //**
 	//testing preload gambar is_primary
-	campaigns, _ := campaignRepository.FindByUserID(1)
-	fmt.Println("debug")
-	fmt.Println("debug")
-	fmt.Println("debug")
-	fmt.Println(len(campaigns)) // rentang/jumlah data
-	// tampilkan rentang data dari field name
-	for _, campaign := range campaigns {
-		fmt.Println(campaign.Name)
-
-		if len(campaign.CampaignImages) > 0 {
-			fmt.Println("jumlah gambar")
-			fmt.Println(len(campaign.CampaignImages))
-			fmt.Println(campaign.CampaignImages[0].FileName)
-		}
-	}
+	// campaigns, _ := campaignRepository.FindByUserID(1)
+	// fmt.Println("debug")
+	// fmt.Println("debug")
+	// fmt.Println("debug")
+	// fmt.Println(len(campaigns)) // rentang/jumlah data
+	// // tampilkan rentang data dari field name
+	// for _, campaign := range campaigns {
+	// 	fmt.Println(campaign.Name)
+	// 	if len(campaign.CampaignImages) > 0 {
+	// 		fmt.Println("jumlah gambar")
+	// 		fmt.Println(len(campaign.CampaignImages))
+	// 		fmt.Println(campaign.CampaignImages[0].FileName)
+	// 	}
+	// }
 
 	userService := user.NewService(userRepository)
-
+	campaignService := campaign.NewService(campaignRepository)
 	// userByEmail, err := userRepository.FindByEmail("xgopers@gmail.com")
 	// if err != nil {
 	// 	fmt.Println(err.Error())
@@ -71,6 +70,10 @@ func main() {
 	// fmt.Println(user.Email)
 
 	//userService.SaveAvatar(1, "images/1-profile.png")
+
+	// testing service load campaign data dengan user_id
+	campaign, _ := campaignService.FindCampaigns(1)
+	fmt.Println(len(campaign))
 
 	authService := auth.NewService()
 	//fmt.Println(authService.GenerateToken(1001)) //hasilnya copy ke jwt.io

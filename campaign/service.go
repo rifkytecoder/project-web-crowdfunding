@@ -1,7 +1,7 @@
 package campaign
 
 type Service interface {
-	FindCampaigns(userID int) ([]Campaign, error)
+	GetCampaigns(userID int) ([]Campaign, error)
 }
 
 type service struct {
@@ -13,7 +13,7 @@ func NewService(repository Repository) *service {
 }
 
 // bukan dlm bentuk json jdi tdk mapping json
-func (s *service) FindCampaigns(userID int) ([]Campaign, error) {
+func (s *service) GetCampaigns(userID int) ([]Campaign, error) {
 	// mengecek user_id ada atau tidak
 	if userID != 0 {
 		campaigns, err := s.repository.FindByUserID(userID)

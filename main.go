@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"project-campaign/auth"
@@ -72,8 +71,8 @@ func main() {
 	//userService.SaveAvatar(1, "images/1-profile.png")
 
 	// testing service load campaign data dengan user_id
-	campaign, _ := campaignService.FindCampaigns(1)
-	fmt.Println(len(campaign))
+	// campaign, _ := campaignService.GetCampaigns(1)
+	// fmt.Println(len(campaign))
 
 	authService := auth.NewService()
 	//fmt.Println(authService.GenerateToken(1001)) //hasilnya copy ke jwt.io
@@ -90,6 +89,7 @@ func main() {
 	// } // cek di JWT.io di bagian Signature
 
 	userHandler := handler.NewUserHandler(userService, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
@@ -99,6 +99,8 @@ func main() {
 		api.POST("/email_checkers", userHandler.CheckEmailAvailability)
 		//api.POST("/avatars", userHandler.UploadAvatar) // none middleware
 		api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
+
+		api.GET("/campaigns", campaignHandler.GetCampaigns)
 	}
 
 	router.Run()

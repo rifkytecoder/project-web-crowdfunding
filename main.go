@@ -92,6 +92,9 @@ func main() {
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
+	// agar bisa di panggil gambar yang ada di dalam folder images dari insomnia
+	router.Static("/images", "./images") // images routing
+
 	api := router.Group("/api/v1")
 	{
 		api.POST("/users", userHandler.RegisterUser)

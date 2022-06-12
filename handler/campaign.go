@@ -107,3 +107,50 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 
 }
+
+//Analisa update campaign
+// user masukkan input
+// handler
+// mapping input ke input struct (ada 2)
+// input dari user, dan juga input yang ada di uri (passing ke service)
+// service (find campaign by id, mengkp parameter yg sdh ada ke struct)
+// repository update data campaign
+func (h *campaignHandler) UpdatedCampaign(c *gin.Context) {
+	var inputID campaign.GetCampaignDetailInput //from input
+
+	err := c.ShouldBindUri(&inputID) //binding uri
+
+	if err != nil {
+		response := helper.APIResponse("Failed to update campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	var inputData campaign.CreateCampaignInput
+
+	err = c.ShouldBindJSON(&inputData) //binding json
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Failed to update campaign", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// agar hanya ID yg memiliki campaign yg bisa update data campaignnya
+	// mengambil data user dri kontex yg tlh di buat/set di middleware
+	currentUser := c.MustGet("currentUser").(user.User)
+	// memasukkan data user
+	inputData.User = currentUser
+
+	updatedCampaign, err := h.service.UpdateCampaign(inputID, inputData)
+	if err != nil {
+		response := helper.APIResponse("Failed to update campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIResponse("Success to update campaign", http.StatusOK, "success", campaign.FormatCampaignDetail(updatedCampaign)) //newCampaign
+	c.JSON(http.StatusOK, response)
+}

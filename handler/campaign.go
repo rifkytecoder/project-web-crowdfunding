@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"project-campaign/campaign"
 	"project-campaign/helper"
+	"project-campaign/user"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -68,4 +69,41 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 
 	response := helper.APIResponse("Campaign detail", http.StatusOK, "success", campaign.FormatCampaignDetail(campaignDetail)) //campaignDetail
 	c.JSON(http.StatusOK, response)
+}
+
+// Create campaign analisa
+// tangkap parameter dari user mapping ke input struct
+// ambil current user dari jwt/handler
+// panggil service, parameter input struct (dan juga buat slug)
+// panggil repository untuk simpan data campaign baru
+func (h *campaignHandler) CreateCampaign(c *gin.Context) {
+	// variabel untuk menangkap parameter yg di kirim dari user
+	var input campaign.CreateCampaignInput
+
+	err := c.ShouldBindJSON(&input)
+
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Failed to create campaign", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// mengambil data user dri kontex yg tlh di buat/set di middleware
+	currentUser := c.MustGet("currentUser").(user.User)
+	// memasukkan data user
+	input.User = currentUser
+
+	newCampaign, err := h.service.CreateCampaign(input)
+	if err != nil {
+		response := helper.APIResponse("Failed to create campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIResponse("Success to create campaign", http.StatusOK, "success", campaign.FormatCampaignDetail(newCampaign)) //newCampaign
+	c.JSON(http.StatusOK, response)
+
 }

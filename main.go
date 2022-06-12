@@ -88,6 +88,20 @@ func main() {
 	// 	fmt.Println("INVALID")
 	// } // cek di JWT.io di bagian Signature
 
+	// Testing create new campaign and slug
+	// input := campaign.CreateCampaignInput{}
+	// input.Name = "Pengalangan Dana Startup"
+	// input.ShortDescription = "short lorem"
+	// input.Description = "long lorem"
+	// input.GoalAmount = 10000000
+	// input.Perks = "hadia satu, dua, tiga"
+	// inputUser, _ := userService.GetUserByID(1) //panggil data user dgn ID 1
+	// input.User = inputUser
+	// _, err = campaignService.CreateCampaign(input) // create data
+	// if err != nil {
+	// 	log.Fatal(err.Error())
+	// }
+
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 
@@ -105,6 +119,7 @@ func main() {
 
 		api.GET("/campaigns", campaignHandler.GetCampaigns)
 		api.GET("/campaigns/:id", campaignHandler.GetCampaign)
+		api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign) //perlu memiliki user yg sdh login
 	}
 
 	router.Run()

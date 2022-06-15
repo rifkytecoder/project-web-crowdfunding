@@ -121,6 +121,7 @@ func main() {
 		api.GET("/campaigns/:id", campaignHandler.GetCampaign)
 		api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)     //perlu memiliki user yg sdh login
 		api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdatedCampaign) //perlu memiliki user yg sdh login
+		api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage)  //perlu memiliki user yg sdh login
 	}
 
 	router.Run()

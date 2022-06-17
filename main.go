@@ -7,6 +7,7 @@ import (
 	"project-campaign/campaign"
 	"project-campaign/handler"
 	"project-campaign/helper"
+	"project-campaign/transaction"
 	"project-campaign/user"
 	"strings"
 
@@ -43,6 +44,8 @@ func main() {
 	// 		fmt.Println(campaign.CampaignImages[0].FileName)
 	// 	}
 	// }
+
+	transactionRepository := transaction.NewRepository(db)
 
 	userService := user.NewService(userRepository)
 	campaignService := campaign.NewService(campaignRepository)
@@ -102,8 +105,11 @@ func main() {
 	// 	log.Fatal(err.Error())
 	// }
 
+	transactionService := transaction.NewService(transactionRepository, campaignRepository)
+
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	// agar bisa di panggil gambar yang ada di dalam folder images dari insomnia
@@ -122,6 +128,8 @@ func main() {
 		api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)     //perlu memiliki user yg sdh login
 		api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdatedCampaign) //perlu memiliki user yg sdh login
 		api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage)  //perlu memiliki user yg sdh login
+
+		api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
 	}
 
 	router.Run()

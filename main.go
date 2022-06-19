@@ -130,6 +130,7 @@ func main() {
 		api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage)  //perlu memiliki user yg sdh login
 
 		api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
+		api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
 	}
 
 	router.Run()

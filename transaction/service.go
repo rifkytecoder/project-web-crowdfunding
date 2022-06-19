@@ -7,6 +7,8 @@ import (
 
 type Service interface {
 	GetTransactionsByCampaignID(input GetCampaignTransactionsInput) ([]Transaction, error) //campaignID int = parameternya dibungkus input struct
+	// dapat id tdk dari user langsung tpi dari jwt siapa yg melakukan request `mknya tdk pke input `
+	GetTransactionsByUserID(userID int) ([]Transaction, error)
 }
 
 type service struct {
@@ -33,5 +35,16 @@ func (s *service) GetTransactionsByCampaignID(input GetCampaignTransactionsInput
 	if err != nil {
 		return transactions, err
 	}
+	return transactions, nil
+}
+
+func (s *service) GetTransactionsByUserID(userID int) ([]Transaction, error) {
+
+	transactions, err := s.repository.GetByUserID(userID)
+
+	if err != nil {
+		return transactions, err
+	}
+
 	return transactions, nil
 }

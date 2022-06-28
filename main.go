@@ -105,7 +105,7 @@ func main() {
 	// if err != nil {
 	// 	log.Fatal(err.Error())
 	// }
-	paymentService := payment.NewService()
+	paymentService := payment.NewService() // notification midtrans
 	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService)
 
 	// testing new data transaction
@@ -119,7 +119,7 @@ func main() {
 
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
-	transactionHandler := handler.NewTransactionHandler(transactionService)
+	transactionHandler := handler.NewTransactionHandler(transactionService) // notification midtrans
 
 	router := gin.Default()
 	// agar bisa di panggil gambar yang ada di dalam folder images dari insomnia

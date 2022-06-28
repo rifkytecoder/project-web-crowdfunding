@@ -4,6 +4,7 @@ import (
 	"errors"
 	"project-campaign/campaign"
 	"project-campaign/payment"
+	"strconv"
 )
 
 type Service interface {
@@ -11,6 +12,7 @@ type Service interface {
 	// dapat id tdk dari user langsung tpi dari jwt siapa yg melakukan request `mknya tdk pke input `
 	GetTransactionsByUserID(userID int) ([]Transaction, error)
 	CreateTransaction(input CreateTransactionInput) (Transaction, error)
+	ProcessPayment(input TransactionNotificationInput) error // notification midtrans**
 }
 
 type service struct {
@@ -89,5 +91,54 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 	}
 
 	return newTransaction, nil
+
+}
+
+// todo tangkap response json midtrans notification transaction
+func (s *service) ProcessPayment(input TransactionNotificationInput) error {
+	// var menampung inputan midtrans, parsing response json dari midtrans
+	transaction_id, _ := strconv.Atoi(input.OrderID) //string to int
+
+	// mapping data midtrans ke entitas transaction dgn field ID
+	transaction, err := s.repository.GetByID(transaction_id)
+	if err != nil {
+		return err
+	}
+
+	// Cek kondisi status <value> dari midtrans transaction notification dan assign status ke field status
+	if input.PaymentType == "credit_card" && input.TransactionStatus == "capture" && input.FraudStatus == "accept" {
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "settlement" {
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "deny" || input.TransactionStatus == "expire" || input.TransactionStatus == "cancel" {
+		transaction.Status = "cancelled"
+	}
+
+	// update field Status di entitas transaction
+	updatedTransaction, err := s.repository.Update(transaction)
+	if err != nil {
+		return err
+	}
+
+	// todo menga-update data campaign field backer_count (menambah jumlah) jika transaction ber-status paid
+	// dapatkan field campaign_id dari entitas campaign bersangkutan
+	campaign, err := s.campaignRepository.FindByID(updatedTransaction.CampaignID)
+	if err != nil {
+		return err
+	}
+
+	// jika ada kondisi field status paid maka field backer dan amount akan bertambah
+	if updatedTransaction.Status == "paid" {
+		campaign.BackerCount = campaign.BackerCount + 1                             // bertambah 1 jika status transaksi paid
+		campaign.CurrentAmount = campaign.CurrentAmount + updatedTransaction.Amount // bertambah jumlah amount jika status transaksi paid
+
+		// simpan dan update data perubahan campaign
+		_, err := s.campaignRepository.Update(campaign)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 
 }

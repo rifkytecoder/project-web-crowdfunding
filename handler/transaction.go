@@ -17,6 +17,7 @@ import (
 // repo mencari data transaction suatu campaign
 type transactionHandler struct {
 	service transaction.Service
+	// paymentService payment.Service // notification midtrans**
 }
 
 func NewTransactionHandler(service transaction.Service) *transactionHandler {
@@ -108,4 +109,33 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context) {
 	// kondisi response saat new data create success
 	response := helper.APIResponse("Success to create transaction", http.StatusOK, "success", transaction.FormatTransaction(newTransaction))
 	c.JSON(http.StatusOK, response)
+}
+
+// todo menagani notification dari midtrans
+func (h *transactionHandler) GetNotification(c *gin.Context) {
+
+	// tangkap mapping data dari midtrans yg di kirimkan
+	var input transaction.TransactionNotificationInput
+
+	// tangkap request dari midtrans dan binding
+	err := c.ShouldBindJSON(&input)
+
+	if err != nil {
+		response := helper.APIResponse("Failed to process notification", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// cek proses transaksi notifikasi status
+	//err = h.paymentService.ProcessPayment(input)
+	err = h.service.ProcessPayment(input)
+	if err != nil {
+		response := helper.APIResponse("Failed to process notification", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// yang mengakses adalah midtrans jdi response-nya gak harus muluk muluk response nya
+	// response success
+	c.JSON(http.StatusOK, input)
 }

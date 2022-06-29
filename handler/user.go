@@ -208,3 +208,15 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	//  repo ambil data user yg di ID = 1
 	//  repo update data user simpan lokasi file
 }
+
+//todo fetch data user yg login sekarang
+// untuk integrasi dari Frontend ke API
+func (h *userHandler) FetchUser(c *gin.Context) {
+
+	currentUser := c.MustGet("currentUser").(user.User) //user yg login sekarang
+	formatter := user.FormatUser(currentUser, "")       // tidak memanggil generate token krna tdk di perlukan
+
+	response := helper.APIResponse("Successfuly fetch user data", http.StatusOK, "success", formatter)
+
+	c.JSON(http.StatusOK, response)
+}

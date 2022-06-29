@@ -137,6 +137,7 @@ func main() {
 		api.POST("/email_checkers", userHandler.CheckEmailAvailability)
 		//api.POST("/avatars", userHandler.UploadAvatar) // none middleware
 		api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
+		api.GET("/user/fetch", authMiddleware(authService, userService), userHandler.FetchUser) // fetch data user**
 
 		api.GET("/campaigns", campaignHandler.GetCampaigns)
 		api.GET("/campaigns/:id", campaignHandler.GetCampaign)

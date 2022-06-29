@@ -12,6 +12,7 @@ import (
 	"project-campaign/user"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/driver/mysql"
@@ -122,6 +123,10 @@ func main() {
 	transactionHandler := handler.NewTransactionHandler(transactionService) // notification midtrans
 
 	router := gin.Default()
+
+	//todo using CORS
+	router.Use(cors.Default())
+
 	// agar bisa di panggil gambar yang ada di dalam folder images dari insomnia
 	router.Static("/images", "./images") // images routing
 
@@ -143,8 +148,7 @@ func main() {
 		api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
 		api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction)
 	}
-
-	router.Run()
+	router.Run() // :8080
 	// userInput := user.RegisterUserInput{}
 	// userInput.Name = "Dart"
 	// userInput.Occupation = "Mobile developer"
